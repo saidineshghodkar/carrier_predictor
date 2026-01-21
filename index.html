@@ -3,760 +3,1127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="AI-driven career assessment for students">
-    <meta name="author" content="CareerPath Pro">
-    <title>CareerPath Pro - Advanced AI Career Guidance</title>
+    <meta name="description" content="Free career guidance tool for students - No data collection, works offline">
+    <meta name="author" content="Student Career Advisor">
+    <title>Career Stream Finder - Free Student Tool</title>
     
     <!-- External Libraries -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        /* ==================== CSS VARIABLES & RESET ==================== */
-        :root {
-            --primary: #2563eb;
-            --primary-dark: #1e40af;
-            --secondary: #4f46e5;
-            --accent: #f59e0b;
-            --success: #10b981;
-            --danger: #ef4444;
-            --background: #f8fafc;
-            --surface: #ffffff;
-            --text-main: #1e293b;
-            --text-light: #64748b;
-            --border-radius: 16px;
-            --shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        /* RESET & BASE */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #f8fafc; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; 
+            color: #1e293b;
+            line-height: 1.6;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background: var(--background); min-height: 100vh; color: var(--text-main); line-height: 1.6; }
-        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
-
-        /* ==================== COMPONENT STYLES ==================== */
         
+        /* CONTAINERS */
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        
+        /* HEADER */
         .header {
+            background: linear-gradient(135deg, #2563eb, #4f46e5);
+            color: white;
             text-align: center;
             padding: 40px 20px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            border-radius: var(--border-radius);
+            border-radius: 16px;
             margin-bottom: 30px;
-            box-shadow: var(--shadow);
-            position: relative;
-            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
-
-        .header::after {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: url('https://www.transparenttextures.com/patterns/cubes.png'); opacity: 0.1;
-        }
-
-        .header h1 { font-size: 2.2rem; margin-bottom: 10px; font-weight: 800; }
+        .header h1 { font-size: 2.2rem; margin-bottom: 10px; }
         .header p { font-size: 1.1rem; opacity: 0.9; max-width: 600px; margin: 0 auto; }
-
+        
+        /* CARDS */
         .card {
-            background: var(--surface);
-            border-radius: var(--border-radius);
+            background: white;
+            border-radius: 16px;
             padding: 30px;
             margin-bottom: 25px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(0,0,0,0.05);
-            transition: var(--transition);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
         }
-
-        /* Progress & Timer */
-        .progress-bar-container {
-            height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin: 20px 0;
-        }
-        .progress-bar-fill {
-            height: 100%; background: var(--success); width: 0%; transition: width 0.5s ease;
-        }
-        .timer-badge {
-            position: fixed; top: 20px; right: 20px;
-            background: var(--surface); color: var(--danger);
-            padding: 10px 20px; border-radius: 50px;
-            font-weight: bold; box-shadow: var(--shadow);
-            z-index: 100; border: 2px solid #fee2e2;
-        }
-
-        /* Questions */
-        .question-card { animation: slideIn 0.4s ease; }
-        .question-text { font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; color: var(--text-main); }
         
+        /* PROGRESS */
+        .progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #10b981;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        /* TIMER */
+        .timer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            color: #ef4444;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 2px solid #fee2e2;
+            display: none;
+            z-index: 1000;
+        }
+        
+        /* QUESTIONS */
+        .question-card { margin-bottom: 20px; }
+        .question-text { 
+            font-size: 1.3rem; 
+            font-weight: 600; 
+            margin-bottom: 25px; 
+            color: #1e293b;
+        }
         .options-grid { display: grid; gap: 12px; }
-        .option-btn {
-            padding: 16px; border: 2px solid #e2e8f0; border-radius: 12px;
-            background: var(--surface); cursor: pointer; text-align: left;
-            transition: var(--transition); display: flex; align-items: center; gap: 12px;
+        .option {
+            padding: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
         }
-        .option-btn:hover { border-color: var(--primary); background: #eff6ff; }
-        .option-btn.selected { border-color: var(--primary); background: #eff6ff; outline: 2px solid var(--primary); }
-        .option-circle { 
-            width: 24px; height: 24px; border-radius: 50%; border: 2px solid #cbd5e1; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center;
+        .option:hover { border-color: #2563eb; background: #eff6ff; }
+        .option.selected { 
+            border-color: #2563eb; 
+            background: #eff6ff; 
+            outline: 2px solid #2563eb;
         }
-        .option-btn.selected .option-circle { border-color: var(--primary); background: var(--primary); }
-        .option-btn.selected .option-circle::after { content: '✓'; color: white; font-size: 14px; }
-
-        /* Sliders */
-        .range-container { margin: 30px 0; padding: 0 10px; }
-        input[type=range] { width: 100%; accent-color: var(--primary); cursor: pointer; }
-        .range-labels { display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-light); margin-top: 10px; }
-        .range-value { text-align: center; font-size: 1.5rem; font-weight: bold; color: var(--primary); margin-bottom: 10px; }
-
-        /* Dashboard */
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .stat-card { background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; }
-        .career-badge { 
-            display: inline-block; padding: 5px 12px; border-radius: 20px; 
-            font-size: 0.8rem; font-weight: 600; background: #e0e7ff; color: var(--primary); 
+        .option-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .option.selected .option-circle {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: white;
+        }
+        
+        /* SLIDERS */
+        .slider-container { margin: 30px 0; padding: 0 10px; }
+        .slider {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 4px;
+            outline: none;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #2563eb;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        .slider-value {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 10px;
+        }
+        
+        /* BUTTONS */
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #1e40af;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.2);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #64748b;
+            color: #64748b;
+        }
+        .btn-outline:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+        .btn-full { width: 100%; justify-content: center; }
+        
+        /* DASHBOARD */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .result-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: #e0e7ff;
+            color: #2563eb;
             margin: 0 5px 5px 0;
         }
-
-        /* Roadmap */
-        .roadmap-step { 
-            position: relative; padding-left: 40px; padding-bottom: 30px; 
-            border-left: 3px solid #e2e8f0; 
+        
+        /* ROADMAP */
+        .roadmap-step {
+            position: relative;
+            padding-left: 40px;
+            padding-bottom: 30px;
+            border-left: 3px solid #e2e8f0;
         }
-        .roadmap-step:last-child { border-left: 3px solid transparent; }
+        .roadmap-step:last-child {
+            border-left: 3px solid transparent;
+            padding-bottom: 0;
+        }
         .roadmap-step::before {
-            content: ''; position: absolute; left: -11px; top: 0;
-            width: 20px; height: 20px; border-radius: 50%;
-            background: var(--surface); border: 4px solid var(--primary);
+            content: '';
+            position: absolute;
+            left: -11px;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            border: 4px solid #2563eb;
         }
-        .step-title { font-weight: bold; color: var(--text-main); font-size: 1.1rem; }
-        .step-desc { font-size: 0.95rem; color: var(--text-light); }
-
-        /* Chatbot */
-        .chat-widget {
-            position: fixed; bottom: 30px; right: 30px; z-index: 999;
+        
+        /* CHATBOT */
+        .chatbot {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 999;
         }
         .chat-toggle {
-            width: 60px; height: 60px; border-radius: 50%; background: var(--primary);
-            color: white; display: flex; align-items: center; justify-content: center;
-            font-size: 24px; cursor: pointer; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
-            transition: transform 0.2s;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #2563eb;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+            border: none;
         }
-        .chat-toggle:hover { transform: scale(1.1); }
-        
         .chat-window {
-            position: absolute; bottom: 80px; right: 0; width: 350px; height: 500px;
-            background: var(--surface); border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            display: none; flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0;
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            display: none;
+            flex-direction: column;
+            border: 1px solid #e2e8f0;
         }
-        .chat-header { padding: 15px; background: var(--primary); color: white; font-weight: bold; }
-        .chat-body { flex: 1; padding: 15px; overflow-y: auto; background: #f8fafc; }
-        .chat-msg { 
-            padding: 10px 15px; border-radius: 12px; margin-bottom: 10px; font-size: 0.95rem; max-width: 85%; 
+        .chat-header {
+            padding: 15px;
+            background: #2563eb;
+            color: white;
+            font-weight: bold;
+            border-radius: 16px 16px 0 0;
         }
-        .bot-msg { background: white; border: 1px solid #e2e8f0; align-self: flex-start; border-bottom-left-radius: 2px; }
-        .user-msg { background: var(--primary); color: white; align-self: flex-end; margin-left: auto; border-bottom-right-radius: 2px; }
-        .chat-input-area { padding: 15px; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; }
-        .chat-input { 
-            flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; 
+        .chat-body {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f8fafc;
         }
-
-        /* Buttons & Utils */
-        .btn {
-            padding: 12px 24px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;
-            transition: var(--transition); display: inline-flex; align-items: center; gap: 8px;
+        .message {
+            padding: 10px 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            max-width: 85%;
+            font-size: 0.95rem;
         }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
-        .btn-outline { background: transparent; border: 2px solid var(--text-light); color: var(--text-light); }
-        .w-full { width: 100%; justify-content: center; }
-        .hidden { display: none; }
-
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .bot-message {
+            background: white;
+            border: 1px solid #e2e8f0;
+            align-self: flex-start;
+        }
+        .user-message {
+            background: #2563eb;
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        .chat-input {
+            padding: 15px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 10px;
+            background: white;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            outline: none;
+        }
+        
+        /* UTILITIES */
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
+        .flex-center { display: flex; align-items: center; justify-content: center; }
+        .gap-10 { gap: 10px; }
+        .mb-20 { margin-bottom: 20px; }
+        .mt-30 { margin-top: 30px; }
+        
+        /* LOADING */
+        .loading {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .card { padding: 20px; }
+            .header { padding: 30px 15px; }
+            .header h1 { font-size: 1.8rem; }
+            .chat-window {
+                width: 300px;
+                right: 10px;
+            }
+            .timer {
+                top: 10px;
+                right: 10px;
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>
 
-<div class="timer-badge hidden" id="timerDisplay">
-    <i class="far fa-clock"></i> <span id="timeRemaining">10:00</span>
+<!-- Timer -->
+<div class="timer" id="timer">
+    <i class="far fa-clock"></i> <span id="time">10:00</span>
 </div>
 
 <div class="container">
     
-    <!-- HEADER -->
-    <div class="header">
-        <h1>CareerPath Pro <span style="font-size: 0.5em; vertical-align: super; opacity: 0.8">BETA</span></h1>
-        <p>Advanced AI-driven career discovery for 10th-grade graduates.</p>
-    </div>
-
     <!-- WELCOME SCREEN -->
-    <div id="welcomeScreen" class="card" style="text-align: center; padding: 50px 20px;">
-        <i class="fas fa-compass" style="font-size: 60px; color: var(--primary); margin-bottom: 20px;"></i>
-        <h2>Discover Your Perfect Stream</h2>
-        <p style="color: var(--text-light); margin-bottom: 30px; max-width: 500px; margin-left: auto; margin-right: auto;">
-            Our algorithm analyzes <strong>Academic Aptitude</strong>, <strong>Interest Patterns</strong>, and <strong>Behavioral Traits</strong> to recommend the most suitable career path.
+    <div id="welcome" class="card text-center">
+        <i class="fas fa-graduation-cap" style="font-size: 60px; color: #2563eb; margin-bottom: 20px;"></i>
+        <h2 style="margin-bottom: 15px;">Find Your Career Path</h2>
+        <p style="color: #64748b; margin-bottom: 30px; max-width: 500px; margin: 0 auto 30px;">
+            Free tool to help students choose the right stream after 10th grade. 
+            No data collected - everything stays in your browser.
         </p>
-        <div style="display: flex; gap: 20px; justify-content: center; margin-bottom: 30px;">
-            <div class="stat-card"><strong>3 Sections</strong><br><span style="font-size:0.8rem">Academics, Interests, Behavior</span></div>
-            <div class="stat-card"><strong>~5 Minutes</strong><br><span style="font-size:0.8rem">Estimated Time</span></div>
+        <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap;">
+            <div class="result-card">
+                <strong>8 Questions</strong><br>
+                <span style="font-size: 0.8rem; color: #64748b;">Quick assessment</span>
+            </div>
+            <div class="result-card">
+                <strong>100% Free</strong><br>
+                <span style="font-size: 0.8rem; color: #64748b;">No registration</span>
+            </div>
+            <div class="result-card">
+                <strong>Local Processing</strong><br>
+                <span style="font-size: 0.8rem; color: #64748b;">No data sent</span>
+            </div>
         </div>
-        <button id="startBtn" class="btn btn-primary">Start Assessment <i class="fas fa-arrow-right"></i></button>
+        <button id="startBtn" class="btn btn-primary" style="min-width: 200px;">
+            Start Free Assessment <i class="fas fa-arrow-right"></i>
+        </button>
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+            <p style="font-size: 0.8rem; color: #64748b;">
+                <i class="fas fa-lock"></i> All processing happens in your browser. No data is collected or stored.
+            </p>
+        </div>
     </div>
-
-    <!-- ASSESSMENT UI -->
-    <div id="assessmentScreen" class="hidden">
-        <div class="progress-bar-container">
-            <div id="progressBar" class="progress-bar-fill"></div>
+    
+    <!-- ASSESSMENT SCREEN -->
+    <div id="assessment" class="hidden">
+        <div class="progress-bar">
+            <div id="progress" class="progress-fill"></div>
         </div>
         
         <div class="card">
             <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-                <span id="sectionTitle" style="font-weight: bold; color: var(--primary); text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;">SECTION A: ACADEMICS</span>
-                <span id="questionCount" style="color: var(--text-light); font-size: 0.9rem;">1/15</span>
+                <span id="section" style="font-weight: bold; color: #2563eb; font-size: 0.85rem;">
+                    SECTION 1: ACADEMICS
+                </span>
+                <span id="counter" style="color: #64748b; font-size: 0.9rem;">
+                    Question 1/8
+                </span>
             </div>
-
+            
             <div id="questionContainer"></div>
-
+            
             <div style="display: flex; justify-content: space-between; margin-top: 30px;">
-                <button class="btn btn-outline" id="prevBtn" disabled>Previous</button>
-                <button class="btn btn-primary" id="nextBtn">Next <i class="fas fa-chevron-right"></i></button>
+                <button id="prevBtn" class="btn btn-outline" disabled>
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <button id="nextBtn" class="btn btn-primary">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
             </div>
         </div>
     </div>
-
+    
     <!-- LOADING SCREEN -->
-    <div id="loadingScreen" class="card hidden" style="text-align: center; padding: 60px;">
-        <i class="fas fa-circle-notch fa-spin" style="font-size: 50px; color: var(--primary); margin-bottom: 20px;"></i>
-        <h3>Analyzing Your Profile...</h3>
-        <p id="loadingText" style="color: var(--text-light);">Mapping academic strengths...</p>
-    </div>
-
-    <!-- DASHBOARD -->
-    <div id="dashboardScreen" class="hidden">
-        <div class="card" style="border-left: 5px solid var(--success);">
-            <h2><i class="fas fa-check-circle" style="color: var(--success);"></i> Assessment Complete</h2>
-            <p>Based on our analysis, your profile strongly aligns with the following path:</p>
+    <div id="loading" class="card hidden text-center">
+        <div style="padding: 40px;">
+            <i class="fas fa-circle-notch loading" style="font-size: 50px; color: #2563eb; margin-bottom: 20px;"></i>
+            <h3 style="margin-bottom: 15px;">Analyzing Your Responses</h3>
+            <p id="loadingText" style="color: #64748b;">Processing your answers...</p>
+            <div style="width: 200px; height: 4px; background: #e2e8f0; margin: 30px auto; border-radius: 2px; overflow: hidden;">
+                <div id="loadingBar" style="height: 100%; background: #2563eb; width: 0%;"></div>
+            </div>
         </div>
-
+    </div>
+    
+    <!-- RESULTS SCREEN -->
+    <div id="results" class="hidden">
+        <div class="card" style="border-left: 5px solid #10b981;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="width: 50px; height: 50px; background: #10b981; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div>
+                    <h2>Assessment Complete</h2>
+                    <p style="color: #64748b;">Based on your responses, here are your suggested paths:</p>
+                </div>
+            </div>
+        </div>
+        
         <div class="dashboard-grid">
-            <!-- Main Result -->
+            <!-- MAIN RESULT -->
             <div class="card" style="grid-column: span 2;">
-                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                    <div id="careerIcon" style="width: 50px; height: 50px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;"></div>
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <div id="resultIcon" style="width: 50px; height: 50px; background: #2563eb; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;"></div>
                     <div>
-                        <div style="font-size: 0.85rem; color: var(--text-light); text-transform: uppercase;">Top Recommendation</div>
-                        <h2 id="careerTitle" style="margin: 0; color: var(--text-main);">Engineering</h2>
+                        <div style="font-size: 0.85rem; color: #64748b;">Top Suggestion</div>
+                        <h2 id="resultTitle" style="margin: 0;">Engineering & Technology</h2>
                     </div>
                 </div>
-                <p id="careerReason" style="color: var(--text-light); margin-bottom: 20px;"></p>
-                <div id="careerTags"></div>
+                <p id="resultDesc" style="color: #64748b; margin-bottom: 20px;"></p>
+                <div id="resultTags"></div>
             </div>
-
-            <!-- Chart -->
-            <div class="card" style="height: 350px; position: relative;">
-                <canvas id="radarChart"></canvas>
+            
+            <!-- CHART -->
+            <div class="card" style="height: 350px;">
+                <canvas id="chart"></canvas>
             </div>
-
-            <!-- Roadmap -->
+            
+            <!-- ROADMAP -->
             <div class="card" style="grid-column: span 3;">
-                <h3><i class="fas fa-map-signs" style="color: var(--accent);"></i> Your 5-Year Roadmap</h3>
-                <div id="roadmapContainer" style="margin-top: 20px;"></div>
+                <h3 style="margin-bottom: 20px;"><i class="fas fa-road" style="color: #f59e0b;"></i> Suggested Path</h3>
+                <div id="roadmap"></div>
             </div>
-
-            <!-- Alternate Options -->
+            
+            <!-- ALTERNATIVES -->
             <div class="card" style="grid-column: span 3;">
-                <h3>Alternative Paths</h3>
-                <div id="altPaths" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 15px;"></div>
+                <h3 style="margin-bottom: 20px;">Other Options to Consider</h3>
+                <div id="alternatives" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;"></div>
             </div>
         </div>
-
-        <div style="text-align: center; margin-top: 30px;">
-            <button id="retakeBtn" class="btn btn-outline"><i class="fas fa-redo"></i> Retake Assessment</button>
-            <button id="saveReportBtn" class="btn btn-primary"><i class="fas fa-download"></i> Save Report</button>
+        
+        <div class="text-center mt-30">
+            <button id="retakeBtn" class="btn btn-outline">
+                <i class="fas fa-redo"></i> Take Assessment Again
+            </button>
+            <button id="printBtn" class="btn btn-primary">
+                <i class="fas fa-print"></i> Print Results
+            </button>
+        </div>
+        
+        <div style="margin-top: 30px; padding: 20px; background: #f1f5f9; border-radius: 12px;">
+            <p style="font-size: 0.9rem; color: #64748b; text-align: center;">
+                <strong>Note:</strong> This is an educational tool for guidance only. 
+                Always consult with school counselors and parents before making academic decisions.
+            </p>
         </div>
     </div>
-
 </div>
 
 <!-- CHATBOT -->
-<div class="chat-widget">
-    <div class="chat-toggle" id="chatToggle">
-        <i class="fas fa-comment-dots"></i>
-    </div>
+<div class="chatbot">
+    <button class="chat-toggle" id="chatToggle">
+        <i class="fas fa-comment"></i>
+    </button>
     <div class="chat-window" id="chatWindow">
         <div class="chat-header">
-            Career Assistant
-            <span style="float: right; cursor: pointer;" id="chatClose">×</span>
+            Study Assistant
+            <span id="chatClose" style="float: right; cursor: pointer;">×</span>
         </div>
         <div class="chat-body" id="chatBody">
-            <div class="chat-msg bot-msg">Hi! I'm your AI counselor. Once you finish the test, I can explain your results or answer questions about colleges!</div>
+            <div class="message bot-message">
+                Hi! I can help explain different career paths and streams. 
+                Ask me anything about education options.
+            </div>
         </div>
-        <div class="chat-input-area">
-            <input type="text" class="chat-input" id="chatInput" placeholder="Ask a question...">
-            <button class="btn btn-primary" style="padding: 8px 15px;" id="chatSendBtn"><i class="fas fa-paper-plane"></i></button>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Ask about streams or careers...">
+            <button id="chatSend" class="btn btn-primary" style="padding: 8px 15px;">
+                <i class="fas fa-paper-plane"></i>
+            </button>
         </div>
     </div>
 </div>
 
-<!-- JAVASCRIPT LOGIC -->
 <script>
-    // --- DATA & CONFIG ---
-    const careerClusters = {
+    // ==================== APP DATA ====================
+    const careerData = {
         engineering: {
-            name: "Engineering & Tech",
-            desc: "Ideal for analytical minds who love building systems, coding, or working with machinery.",
-            streams: ["MPC (Math, Physics, Chem)", "Diploma in Engg"],
-            colleges: ["IITs", "NITs", "BITS", "State Govt Colleges"],
-            exams: ["JEE Mains", "JEE Advanced", "BITSAT"],
-            icon: "fas fa-microchip",
+            name: "Engineering & Technology",
+            desc: "Ideal for students strong in Mathematics and Physics who enjoy problem-solving and building things. Engineering offers diverse specializations and good career opportunities.",
+            stream: "Science (Physics, Chemistry, Mathematics)",
+            subjects: ["Mathematics", "Physics", "Chemistry", "Computer Science"],
+            exams: ["JEE Main", "JEE Advanced", "State CETs"],
+            colleges: ["IITs", "NITs", "State Engineering Colleges"],
+            icon: "fas fa-cogs",
             color: "#2563eb"
         },
         medical: {
             name: "Medical & Healthcare",
-            desc: "For those with high empathy and strong aptitude in biological sciences.",
-            streams: ["BiPC (Bio, Physics, Chem)"],
-            colleges: ["AIIMS", "JIPMER", "State Medical Colleges"],
-            exams: ["NEET", "AIIMS Entrance"],
-            icon: "fas fa-user-md",
+            desc: "Perfect for students interested in Biology and Chemistry who want to help people. The medical field requires dedication but offers rewarding careers.",
+            stream: "Science (Physics, Chemistry, Biology)",
+            subjects: ["Biology", "Physics", "Chemistry"],
+            exams: ["NEET"],
+            colleges: ["AIIMS", "State Medical Colleges", "Private Medical Colleges"],
+            icon: "fas fa-heartbeat",
             color: "#10b981"
         },
         commerce: {
-            name: "Commerce & Finance",
-            desc: "Suits data-driven individuals interested in markets, economy, and management.",
-            streams: ["MEC (Math, Eco, Com)", "CEC (Civics, Eco, Com)"],
-            colleges: ["SRCC", "IIMs (IPM)", "Christ University"],
-            exams: ["CA Foundation", "CUET", "IPMAT"],
+            name: "Commerce & Business",
+            desc: "Great for students interested in business, economics, and finance. Commerce opens doors to careers in accounting, finance, and management.",
+            stream: "Commerce (Accountancy, Business Studies, Economics)",
+            subjects: ["Accountancy", "Business Studies", "Economics", "Mathematics"],
+            exams: ["CUET", "CA Foundation"],
+            colleges: ["Delhi University", "SRCC", "Christ University"],
             icon: "fas fa-chart-line",
             color: "#f59e0b"
         },
         humanities: {
-            name: "Humanities & Law",
-            desc: "For critical thinkers interested in society, policy, psychology, and expression.",
-            streams: ["HEC (History, Eco, Civics)", "Psychology"],
-            colleges: ["JNU", "Ashoka Univ", "NALSAR (Law)"],
-            exams: ["CLAT", "CUET", "AIAET"],
-            icon: "fas fa-balance-scale",
+            name: "Humanities & Arts",
+            desc: "For students interested in society, psychology, history, and creative fields. Humanities develops critical thinking and communication skills.",
+            stream: "Humanities (History, Political Science, Psychology)",
+            subjects: ["History", "Political Science", "Psychology", "Sociology"],
+            exams: ["CUET", "CLAT"],
+            colleges: ["Delhi University", "JNU", "Ashoka University"],
+            icon: "fas fa-book",
             color: "#8b5cf6"
         },
         creative: {
-            name: "Creative & Design",
-            desc: "For visual thinkers who want to pursue design, media, architecture, or arts.",
-            streams: ["Any Stream (Design focus)", "Fine Arts"],
-            colleges: ["NID", "NIFT", "JJ School of Art"],
-            exams: ["NID DAT", "UCEED", "NIFT Entrance"],
+            name: "Creative Arts & Design",
+            desc: "Perfect for creative students interested in design, media, and visual arts. This path values originality and artistic expression.",
+            stream: "Arts with Fine Arts/Design",
+            subjects: ["Fine Arts", "Commercial Art", "Computer Graphics"],
+            exams: ["NID DAT", "NIFT Entrance", "UCEED"],
+            colleges: ["NID", "NIFT", "Architecture Colleges"],
             icon: "fas fa-palette",
             color: "#ec4899"
         },
         vocational: {
-            name: "Vocational & Defense",
-            desc: "Practical, hands-on careers or service to the nation requiring discipline.",
-            streams: ["Vocational Courses", "NDA Prep"],
-            colleges: ["NDA", "Hotel Mgmt Institutes", "ITIs"],
-            exams: ["NDA Exam", "NCHMCT JEE"],
-            icon: "fas fa-shield-alt",
+            name: "Vocational & Technical",
+            desc: "For hands-on learners who prefer practical skills over theory. Vocational courses lead directly to specific careers and trades.",
+            stream: "Vocational/ITI Courses",
+            subjects: ["Trade-specific skills", "Practical training"],
+            exams: ["State Entrance Tests"],
+            colleges: ["ITIs", "Polytechnics", "Skill Centers"],
+            icon: "fas fa-tools",
             color: "#64748b"
         }
     };
 
     const questions = [
-        // SECTION A: ACADEMICS (Marks & Aptitude)
         {
-            id: 'q1', section: 'Academic', type: 'range',
-            text: "How much did you score in Mathematics/Science in 10th?",
-            min: 0, max: 100,
-            weights: { engineering: 30, medical: 20, commerce: 10 }
+            id: 1,
+            text: "What was your overall percentage in 10th standard?",
+            type: "slider",
+            min: 0,
+            max: 100,
+            value: 50,
+            weights: {
+                engineering: 30,
+                medical: 30,
+                commerce: 20,
+                humanities: 15,
+                creative: 10,
+                vocational: 10
+            }
         },
         {
-            id: 'q2', section: 'Academic', type: 'range',
-            text: "How much did you score in Social Studies/English?",
-            min: 0, max: 100,
-            weights: { humanities: 30, commerce: 10, creative: 15 }
+            id: 2,
+            text: "How would you rate your performance in Mathematics?",
+            type: "slider",
+            min: 0,
+            max: 100,
+            value: 50,
+            weights: {
+                engineering: 40,
+                medical: 10,
+                commerce: 30,
+                humanities: 5,
+                creative: 5,
+                vocational: 20
+            }
         },
         {
-            id: 'q3', section: 'Academic', type: 'choice',
-            text: "Which subject homework did you finish first because you liked it?",
+            id: 3,
+            text: "How would you rate your performance in Science subjects?",
+            type: "slider",
+            min: 0,
+            max: 100,
+            value: 50,
+            weights: {
+                engineering: 30,
+                medical: 40,
+                commerce: 10,
+                humanities: 10,
+                creative: 10,
+                vocational: 20
+            }
+        },
+        {
+            id: 4,
+            text: "Which subjects do you enjoy the most?",
+            type: "choice",
             options: [
-                { text: "Math problems / Physics derivations", weights: { engineering: 20, commerce: 5 } },
-                { text: "Biology diagrams / Chemistry labs", weights: { medical: 25 } },
-                { text: "History stories / Civics debates", weights: { humanities: 20 } },
-                { text: "Drawing / Craft / Music", weights: { creative: 25 } }
-            ]
-        },
-        // SECTION B: INTERESTS (Hobbies & Preferences)
-        {
-            id: 'q4', section: 'Interest', type: 'choice',
-            text: "If given a free Sunday, what would you pick?",
-            options: [
-                { text: "Coding a game or fixing a gadget", weights: { engineering: 20, vocational: 10 } },
-                { text: "Reading about health or volunteering at a camp", weights: { medical: 20, humanities: 10 } },
-                { text: "Trading stocks (mock) or managing event budget", weights: { commerce: 25 } },
-                { text: "Sketching, editing video, or writing poetry", weights: { creative: 25 } }
-            ]
-        },
-        {
-            id: 'q5', section: 'Interest', type: 'choice',
-            text: "Which YouTube content do you watch most?",
-            options: [
-                { text: "Tech reviews / How It's Made", weights: { engineering: 15, vocational: 10 } },
-                { text: "Documentaries / Political Analysis", weights: { humanities: 20 } },
-                { text: "Business Case Studies / Shark Tank", weights: { commerce: 20 } },
-                { text: "Art tutorials / Design trends", weights: { creative: 20 } }
-            ]
-        },
-        // SECTION C: BEHAVIORAL (Scenarios)
-        {
-            id: 'q6', section: 'Behavioral', type: 'choice',
-            text: "A complex machine breaks down. You:",
-            options: [
-                { text: "Find the manual and read the logic", weights: { engineering: 15 } },
-                { text: "Open it up and start tinkering", weights: { vocational: 20, engineering: 10 } },
-                { text: "Call support and negotiate a replacement", weights: { commerce: 10, humanities: 5 } },
-                { text: "Don't care, I focus on how it looked anyway", weights: { creative: 10 } }
-            ]
-        },
-        {
-            id: 'q7', section: 'Behavioral', type: 'choice',
-            text: "Your ideal work environment is:",
-            options: [
-                { text: "A quiet lab or computer desk solving problems", weights: { engineering: 10, medical: 10 } },
-                { text: "A busy hospital or field working with people", weights: { medical: 15, vocational: 10 } },
-                { text: "A corporate boardroom dealing with clients", weights: { commerce: 15 } },
-                { text: "A studio with flexible hours and creative freedom", weights: { creative: 20 } }
+                { text: "Mathematics and Science", weights: { engineering: 40, medical: 30 } },
+                { text: "Social Studies and Languages", weights: { humanities: 40, commerce: 20 } },
+                { text: "Arts and Creative subjects", weights: { creative: 50 } },
+                { text: "Practical and Technical subjects", weights: { vocational: 50, engineering: 20 } }
             ]
         },
         {
-            id: 'q8', section: 'Motivation', type: 'choice',
-            text: "What motivates you most?",
+            id: 5,
+            text: "What type of activities do you enjoy?",
+            type: "choice",
             options: [
-                { text: "Innovation & Technology", weights: { engineering: 15 } },
-                { text: "Helping People / Saving Lives", weights: { medical: 20 } },
-                { text: "Money, Power & Business", weights: { commerce: 15 } },
-                { text: "Expression, Fame & Art", weights: { creative: 15 } },
-                { text: "Serving the Nation / Discipline", weights: { vocational: 20 } }
+                { text: "Solving problems and puzzles", weights: { engineering: 40, commerce: 20 } },
+                { text: "Helping others and caring", weights: { medical: 40, humanities: 20 } },
+                { text: "Drawing and designing", weights: { creative: 50 } },
+                { text: "Working with hands", weights: { vocational: 50 } }
+            ]
+        },
+        {
+            id: 6,
+            text: "What kind of work environment do you prefer?",
+            type: "choice",
+            options: [
+                { text: "Office or laboratory", weights: { engineering: 30, medical: 20, commerce: 30 } },
+                { text: "Creative studio", weights: { creative: 40 } },
+                { text: "Field or workshop", weights: { vocational: 40, medical: 20 } },
+                { text: "Varied locations", weights: { humanities: 30, creative: 20 } }
+            ]
+        },
+        {
+            id: 7,
+            text: "What are your future goals?",
+            type: "choice",
+            options: [
+                { text: "Build innovative technology", weights: { engineering: 50 } },
+                { text: "Help people directly", weights: { medical: 50 } },
+                { text: "Start a business", weights: { commerce: 50 } },
+                { text: "Create art or design", weights: { creative: 50 } },
+                { text: "Master a skilled trade", weights: { vocational: 50 } }
+            ]
+        },
+        {
+            id: 8,
+            text: "How do you prefer to learn?",
+            type: "choice",
+            options: [
+                { text: "Through theory and calculations", weights: { engineering: 30, commerce: 30 } },
+                { text: "Through experiments and observation", weights: { medical: 40, engineering: 20 } },
+                { text: "Through discussion and reading", weights: { humanities: 40, commerce: 20 } },
+                { text: "Through hands-on practice", weights: { vocational: 50, creative: 20 } }
             ]
         }
     ];
 
-    // --- APP ENGINE ---
-    const app = {
-        currentQIndex: 0,
-        scores: { engineering: 0, medical: 0, commerce: 0, humanities: 0, creative: 0, vocational: 0 },
-        answers: {},
-        timerInterval: null,
+    // ==================== APP STATE ====================
+    let currentQuestion = 0;
+    let answers = {};
+    let scores = {
+        engineering: 0,
+        medical: 0,
+        commerce: 0,
+        humanities: 0,
+        creative: 0,
+        vocational: 0
+    };
+    let timerInterval = null;
+    let timeLeft = 600; // 10 minutes in seconds
+    let topCareer = null;
 
-        init() {
-            this.setupEventListeners();
-        },
+    // ==================== DOM ELEMENTS ====================
+    const welcomeScreen = document.getElementById('welcome');
+    const assessmentScreen = document.getElementById('assessment');
+    const loadingScreen = document.getElementById('loading');
+    const resultsScreen = document.getElementById('results');
+    const questionContainer = document.getElementById('questionContainer');
+    const progressBar = document.getElementById('progress');
+    const counter = document.getElementById('counter');
+    const section = document.getElementById('section');
+    const timer = document.getElementById('timer');
+    const timeDisplay = document.getElementById('time');
 
-        setupEventListeners() {
-            // Main buttons
-            document.getElementById('startBtn').addEventListener('click', () => this.startAssessment());
-            document.getElementById('prevBtn').addEventListener('click', () => this.prevQuestion());
-            document.getElementById('nextBtn').addEventListener('click', () => this.nextQuestion());
-            document.getElementById('retakeBtn').addEventListener('click', () => location.reload());
-            document.getElementById('saveReportBtn').addEventListener('click', () => window.print());
+    // ==================== INITIALIZE ====================
+    function init() {
+        // Setup event listeners
+        document.getElementById('startBtn').addEventListener('click', startAssessment);
+        document.getElementById('prevBtn').addEventListener('click', prevQuestion);
+        document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+        document.getElementById('retakeBtn').addEventListener('click', () => location.reload());
+        document.getElementById('printBtn').addEventListener('click', () => window.print());
+        
+        // Chatbot
+        document.getElementById('chatToggle').addEventListener('click', toggleChat);
+        document.getElementById('chatClose').addEventListener('click', toggleChat);
+        document.getElementById('chatSend').addEventListener('click', sendChat);
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendChat();
+        });
+        
+        // Initialize first question if needed
+        if (currentQuestion === 0) {
+            renderQuestion();
+        }
+    }
+
+    // ==================== ASSESSMENT FUNCTIONS ====================
+    function startAssessment() {
+        welcomeScreen.classList.add('hidden');
+        assessmentScreen.classList.remove('hidden');
+        timer.style.display = 'block';
+        startTimer();
+        renderQuestion();
+    }
+
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timeDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             
-            // Chatbot
-            document.getElementById('chatToggle').addEventListener('click', () => chatbot.toggle());
-            document.getElementById('chatClose').addEventListener('click', () => chatbot.toggle());
-            document.getElementById('chatSendBtn').addEventListener('click', () => chatbot.send());
-            document.getElementById('chatInput').addEventListener('keypress', (e) => {
-                if(e.key === 'Enter') chatbot.send();
-            });
-        },
-
-        startAssessment() {
-            document.getElementById('welcomeScreen').classList.add('hidden');
-            document.getElementById('assessmentScreen').classList.remove('hidden');
-            document.getElementById('timerDisplay').classList.remove('hidden');
-            this.renderQuestion();
-            this.startTimer(600); // 10 minutes
-        },
-
-        startTimer(duration) {
-            let timer = duration;
-            const display = document.getElementById('timeRemaining');
-            
-            if(this.timerInterval) clearInterval(this.timerInterval);
-            
-            this.timerInterval = setInterval(() => {
-                const minutes = Math.floor(timer / 60);
-                const seconds = timer % 60;
-                display.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                
-                if (--timer < 0) {
-                    clearInterval(this.timerInterval);
-                    this.finishAssessment();
-                }
-            }, 1000);
-        },
-
-        renderQuestion() {
-            const q = questions[this.currentQIndex];
-            const container = document.getElementById('questionContainer');
-            
-            // Update Progress
-            const progress = ((this.currentQIndex) / questions.length) * 100;
-            document.getElementById('progressBar').style.width = `${progress}%`;
-            document.getElementById('questionCount').innerText = `${this.currentQIndex + 1}/${questions.length}`;
-            document.getElementById('sectionTitle').innerText = `SECTION: ${q.section.toUpperCase()}`;
-
-            let html = `<div class="question-card">
-                        <div class="question-text">${this.escapeHtml(q.text)}</div>`;
-
-            if (q.type === 'range') {
-                html += `<div class="range-container">
-                            <div class="range-value" id="val-${q.id}">50</div>
-                            <input type="range" min="${q.min}" max="${q.max}" value="50" id="range-${q.id}">
-                            <div class="range-labels"><span>Low</span><span>High</span></div>
-                         </div>`;
-                // Auto-save default value
-                this.answers[q.id] = { val: 50, weights: q.weights };
-            } else {
-                html += `<div class="options-grid">`;
-                q.options.forEach((opt, idx) => {
-                    html += `<div class="option-btn" data-index="${idx}">
-                                <div class="option-circle"></div>
-                                ${this.escapeHtml(opt.text)}
-                             </div>`;
-                });
-                html += `</div>`;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                finishAssessment();
             }
+        }, 1000);
+    }
+
+    function renderQuestion() {
+        const question = questions[currentQuestion];
+        
+        // Update progress
+        const progress = ((currentQuestion + 1) / questions.length) * 100;
+        progressBar.style.width = `${progress}%`;
+        counter.textContent = `Question ${currentQuestion + 1}/${questions.length}`;
+        section.textContent = currentQuestion < 3 ? 'SECTION 1: ACADEMICS' : 
+                              currentQuestion < 5 ? 'SECTION 2: INTERESTS' : 
+                              'SECTION 3: PREFERENCES';
+        
+        // Render question
+        let html = `<div class="question-card">
+            <div class="question-text">${question.text}</div>`;
+        
+        if (question.type === 'slider') {
+            html += `<div class="slider-container">
+                <div class="slider-value" id="sliderValue${question.id}">${question.value}%</div>
+                <input type="range" min="${question.min}" max="${question.max}" value="${question.value}" 
+                       class="slider" id="slider${question.id}">
+                <div class="slider-labels">
+                    <span>Low</span>
+                    <span>High</span>
+                </div>
+            </div>`;
+            
+            // Save default answer
+            if (!answers[question.id]) {
+                answers[question.id] = {
+                    value: question.value,
+                    weights: question.weights
+                };
+            }
+        } else {
+            html += `<div class="options-grid">`;
+            question.options.forEach((option, index) => {
+                const isSelected = answers[question.id] && answers[question.id].optionIndex === index;
+                html += `<div class="option ${isSelected ? 'selected' : ''}" data-index="${index}">
+                    <div class="option-circle">${isSelected ? '✓' : ''}</div>
+                    ${option.text}
+                </div>`;
+            });
             html += `</div>`;
-            container.innerHTML = html;
-
-            // Add event listeners for dynamic elements
-            if (q.type === 'range') {
-                const rangeInput = document.getElementById(`range-${q.id}`);
-                const rangeValue = document.getElementById(`val-${q.id}`);
-                
-                rangeInput.addEventListener('input', (e) => {
-                    const value = e.target.value;
-                    rangeValue.textContent = value;
-                    this.answers[q.id] = { val: parseInt(value), weights: q.weights };
-                });
-            } else {
-                const optionButtons = document.querySelectorAll('.option-btn');
-                optionButtons.forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const allOpts = document.querySelectorAll('.option-btn');
-                        allOpts.forEach(b => b.classList.remove('selected'));
-                        btn.classList.add('selected');
-                        
-                        // Save Data
-                        const idx = parseInt(btn.dataset.index);
-                        this.answers[q.id] = { val: 1, weights: q.options[idx].weights };
-                    });
-                });
-            }
-
-            // Manage buttons
-            document.getElementById('prevBtn').disabled = this.currentQIndex === 0;
-            document.getElementById('nextBtn').innerText = this.currentQIndex === questions.length - 1 ? "Finish" : "Next";
-        },
-
-        selectOption(el, idx) {
-            // UI Toggle
-            const allOpts = document.querySelectorAll('.option-btn');
-            allOpts.forEach(btn => btn.classList.remove('selected'));
-            el.classList.add('selected');
-
-            // Save Data
-            const q = questions[this.currentQIndex];
-            this.answers[q.id] = { val: 1, weights: q.options[idx].weights }; // 1 indicates selection
-        },
-
-        nextQuestion() {
-            const currentQ = questions[this.currentQIndex];
-            if (!this.answers[currentQ.id]) {
-                alert("Please select an option.");
-                return;
-            }
-            if (this.currentQIndex < questions.length - 1) {
-                this.currentQIndex++;
-                this.renderQuestion();
-            } else {
-                this.finishAssessment();
-            }
-        },
-
-        prevQuestion() {
-            if (this.currentQIndex > 0) {
-                this.currentQIndex--;
-                this.renderQuestion();
-            }
-        },
-
-        finishAssessment() {
-            clearInterval(this.timerInterval);
-            document.getElementById('assessmentScreen').classList.add('hidden');
-            document.getElementById('timerDisplay').classList.add('hidden');
-            document.getElementById('loadingScreen').classList.remove('hidden');
-
-            this.calculateScores();
-
-            // Simulate AI Delay
-            let steps = ["Analyzing marks...", "Mapping hobbies...", "Checking career alignment...", "Generating roadmap..."];
-            let i = 0;
-            let interval = setInterval(() => {
-                document.getElementById('loadingText').innerText = steps[i];
-                i++;
-                if (i >= steps.length) {
-                    clearInterval(interval);
-                    this.showDashboard();
-                }
-            }, 800);
-        },
-
-        calculateScores() {
-            // Reset scores
-            this.scores = { engineering: 0, medical: 0, commerce: 0, humanities: 0, creative: 0, vocational: 0 };
+        }
+        
+        html += `</div>`;
+        questionContainer.innerHTML = html;
+        
+        // Add event listeners
+        if (question.type === 'slider') {
+            const slider = document.getElementById(`slider${question.id}`);
+            const valueDisplay = document.getElementById(`sliderValue${question.id}`);
             
-            // Weighted Logic
-            Object.values(this.answers).forEach(ans => {
-                const multiplier = typeof ans.val === 'number' ? (ans.val / 100) : 1;
-                for (const [category, weight] of Object.entries(ans.weights)) {
-                    if (this.scores[category] !== undefined) {
-                        this.scores[category] += weight * multiplier;
-                    }
-                }
+            slider.addEventListener('input', (e) => {
+                const value = e.target.value;
+                valueDisplay.textContent = `${value}%`;
+                answers[question.id] = {
+                    value: parseInt(value),
+                    weights: question.weights
+                };
             });
-        },
+        } else {
+            const options = document.querySelectorAll('.option');
+            options.forEach(option => {
+                option.addEventListener('click', () => {
+                    // Remove selection from all options
+                    options.forEach(opt => {
+                        opt.classList.remove('selected');
+                        opt.querySelector('.option-circle').textContent = '';
+                    });
+                    
+                    // Select clicked option
+                    option.classList.add('selected');
+                    option.querySelector('.option-circle').textContent = '✓';
+                    
+                    const index = parseInt(option.dataset.index);
+                    answers[question.id] = {
+                        optionIndex: index,
+                        weights: question.options[index].weights
+                    };
+                });
+            });
+        }
+        
+        // Update navigation buttons
+        document.getElementById('prevBtn').disabled = currentQuestion === 0;
+        document.getElementById('nextBtn').textContent = currentQuestion === questions.length - 1 ? 
+            'Finish Assessment' : 'Next Question';
+    }
 
-        showDashboard() {
-            document.getElementById('loadingScreen').classList.add('hidden');
-            document.getElementById('dashboardScreen').classList.remove('hidden');
+    function prevQuestion() {
+        if (currentQuestion > 0) {
+            currentQuestion--;
+            renderQuestion();
+        }
+    }
 
-            // Find Top Career
-            const sorted = Object.entries(this.scores).sort((a, b) => b[1] - a[1]);
-            const topKey = sorted[0][0];
-            const topCareer = careerClusters[topKey];
+    function nextQuestion() {
+        const question = questions[currentQuestion];
+        
+        // Validate answer
+        if (!answers[question.id]) {
+            alert('Please select an answer before continuing.');
+            return;
+        }
+        
+        if (currentQuestion < questions.length - 1) {
+            currentQuestion++;
+            renderQuestion();
+        } else {
+            finishAssessment();
+        }
+    }
+
+    function finishAssessment() {
+        clearInterval(timerInterval);
+        timer.style.display = 'none';
+        assessmentScreen.classList.add('hidden');
+        loadingScreen.classList.remove('hidden');
+        
+        // Calculate scores
+        calculateScores();
+        
+        // Show loading animation
+        let steps = [
+            "Analyzing academic performance...",
+            "Evaluating interests...",
+            "Matching with career paths...",
+            "Generating recommendations..."
+        ];
+        
+        let currentStep = 0;
+        const loadingText = document.getElementById('loadingText');
+        const loadingBar = document.getElementById('loadingBar');
+        
+        const interval = setInterval(() => {
+            loadingText.textContent = steps[currentStep];
+            loadingBar.style.width = `${((currentStep + 1) / steps.length) * 100}%`;
             
-            // Set Global for Chatbot
-            window.userResult = topCareer;
+            currentStep++;
+            if (currentStep >= steps.length) {
+                clearInterval(interval);
+                setTimeout(showResults, 500);
+            }
+        }, 800);
+    }
 
-            // Render Dashboard Data
-            document.getElementById('careerTitle').innerText = topCareer.name;
-            document.getElementById('careerReason').innerText = topCareer.desc;
-            document.getElementById('careerIcon').innerHTML = `<i class="${topCareer.icon}"></i>`;
+    function calculateScores() {
+        // Reset scores
+        scores = {
+            engineering: 0,
+            medical: 0,
+            commerce: 0,
+            humanities: 0,
+            creative: 0,
+            vocational: 0
+        };
+        
+        // Calculate weighted scores
+        Object.values(answers).forEach(answer => {
+            if (answer.value !== undefined) {
+                // Slider answer
+                const multiplier = answer.value / 100;
+                for (const [career, weight] of Object.entries(answer.weights)) {
+                    scores[career] += weight * multiplier;
+                }
+            } else {
+                // Choice answer
+                for (const [career, weight] of Object.entries(answer.weights)) {
+                    scores[career] += weight;
+                }
+            }
+        });
+        
+        // Find top career
+        const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+        topCareer = sorted[0][0];
+    }
+
+    function showResults() {
+        loadingScreen.classList.add('hidden');
+        resultsScreen.classList.remove('hidden');
+        
+        const career = careerData[topCareer];
+        
+        // Update main result
+        document.getElementById('resultTitle').textContent = career.name;
+        document.getElementById('resultDesc').textContent = career.desc;
+        document.getElementById('resultIcon').innerHTML = `<i class="${career.icon}"></i>`;
+        
+        // Update tags
+        let tagsHtml = `<div class="badge">${career.stream}</div>`;
+        career.exams.forEach(exam => {
+            tagsHtml += `<div class="badge">${exam}</div>`;
+        });
+        document.getElementById('resultTags').innerHTML = tagsHtml;
+        
+        // Create roadmap
+        const roadmapHtml = `
+            <div class="roadmap-step">
+                <div class="step-title">Class 11 & 12</div>
+                <div class="step-desc">Choose ${career.stream} stream. Focus on building strong basics.</div>
+            </div>
+            <div class="roadmap-step">
+                <div class="step-title">Entrance Preparation</div>
+                <div class="step-desc">Start preparing for ${career.exams.slice(0, 2).join(' and ')} exams.</div>
+            </div>
+            <div class="roadmap-step">
+                <div class="step-title">College Selection</div>
+                <div class="step-desc">Research colleges like ${career.colleges.slice(0, 2).join(', ')}.</div>
+            </div>
+            <div class="roadmap-step">
+                <div class="step-title">Career Development</div>
+                <div class="step-desc">Gain practical skills through internships and projects.</div>
+            </div>
+        `;
+        document.getElementById('roadmap').innerHTML = roadmapHtml;
+        
+        // Show alternatives (top 3 after main)
+        const sortedScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+        let alternativesHtml = '';
+        
+        for (let i = 1; i <= 3 && i < sortedScores.length; i++) {
+            const [careerKey, score] = sortedScores[i];
+            const altCareer = careerData[careerKey];
+            const percentage = Math.round((score / sortedScores[0][1]) * 100);
             
-            // Render Tags
-            let tagsHtml = `<div class="career-badge">Primary Stream: ${this.escapeHtml(topCareer.streams[0])}</div>`;
-            topCareer.colleges.slice(0, 2).forEach(c => tagsHtml += `<div class="career-badge">${this.escapeHtml(c)}</div>`);
-            document.getElementById('careerTags').innerHTML = tagsHtml;
-
-            // Render Chart
-            this.renderChart(this.scores);
-
-            // Render Roadmap
-            const roadmapHtml = `
-                <div class="roadmap-step">
-                    <div class="step-title">Class 11 & 12</div>
-                    <div class="step-desc">Select ${this.escapeHtml(topCareer.streams.join(' or '))}. Focus on core subjects.</div>
-                </div>
-                <div class="roadmap-step">
-                    <div class="step-title">Entrance Exams</div>
-                    <div class="step-desc">Prepare for ${this.escapeHtml(topCareer.exams.join(', '))}.</div>
-                </div>
-                <div class="roadmap-step">
-                    <div class="step-title">Undergraduate Degree</div>
-                    <div class="step-desc">Enroll in top colleges like ${this.escapeHtml(topCareer.colleges[0])}.</div>
-                </div>
-                <div class="roadmap-step">
-                    <div class="step-title">Career Launch</div>
-                    <div class="step-desc">Internships and entry-level jobs in ${this.escapeHtml(topCareer.name)}.</div>
+            alternativesHtml += `
+                <div class="result-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <strong>${altCareer.name}</strong>
+                        <span style="font-size: 0.9rem; color: #2563eb; background: #e0e7ff; padding: 2px 10px; border-radius: 10px;">
+                            ${percentage}% match
+                        </span>
+                    </div>
+                    <p style="font-size: 0.85rem; color: #64748b;">${altCareer.stream}</p>
                 </div>
             `;
-            document.getElementById('roadmapContainer').innerHTML = roadmapHtml;
+        }
+        
+        document.getElementById('alternatives').innerHTML = alternativesHtml;
+        
+        // Create chart
+        createChart();
+    }
 
-            // Alternate Paths
-            const altHtml = sorted.slice(1, 3).map(k => {
-                const c = careerClusters[k[0]];
-                return `<div class="stat-card">
-                            <strong>${this.escapeHtml(c.name)}</strong>
-                            <p style="font-size:0.8rem; color:var(--text-light)">${this.escapeHtml(c.streams[0])}</p>
-                        </div>`;
-            }).join('');
-            document.getElementById('altPaths').innerHTML = altHtml;
-        },
-
-        renderChart(scores) {
-            const ctx = document.getElementById('radarChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: Object.keys(scores).map(k => k.charAt(0).toUpperCase() + k.slice(1)),
-                    datasets: [{
-                        label: 'Match Score',
-                        data: Object.values(scores),
-                        backgroundColor: 'rgba(37, 99, 235, 0.2)',
-                        borderColor: '#2563eb',
-                        pointBackgroundColor: '#2563eb'
-                    }]
+    function createChart() {
+        const ctx = document.getElementById('chart').getContext('2d');
+        const labels = Object.keys(scores).map(key => {
+            const names = {
+                'engineering': 'Engineering',
+                'medical': 'Medical',
+                'commerce': 'Commerce',
+                'humanities': 'Humanities',
+                'creative': 'Creative',
+                'vocational': 'Vocational'
+            };
+            return names[key];
+        });
+        
+        const maxScore = Math.max(...Object.values(scores));
+        const data = Object.values(scores).map(score => (score / maxScore) * 100);
+        
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Match Score',
+                    data: data,
+                    backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                    borderColor: '#2563eb',
+                    pointBackgroundColor: '#2563eb'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            display: false
+                        }
+                    }
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { 
-                        r: { 
-                            beginAtZero: true, 
-                            grid: { color: '#e2e8f0' },
-                            ticks: { display: false }
-                        } 
-                    },
-                    plugins: {
-                        legend: { display: false }
+                plugins: {
+                    legend: {
+                        display: false
                     }
                 }
-            });
-        },
+            }
+        });
+    }
 
-        escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-    };
-
-    // --- CHATBOT LOGIC ---
-    const chatbot = {
-        visible: false,
-        toggle() {
-            this.visible = !this.visible;
-            document.getElementById('chatWindow').style.display = this.visible ? 'flex' : 'none';
-        },
-        send() {
-            const input = document.getElementById('chatInput');
-            const txt = input.value.trim();
-            if (!txt) return;
-            
-            this.addMsg(txt, 'user');
-            input.value = '';
-
-            // Simple Logic
+    // ==================== CHATBOT FUNCTIONS ====================
+    function toggleChat() {
+        const chatWindow = document.getElementById('chatWindow');
+        const isVisible = chatWindow.style.display === 'flex';
+        chatWindow.style.display = isVisible ? 'none' : 'flex';
+        
+        if (!isVisible) {
             setTimeout(() => {
-                let reply = "I'm still learning! Try asking about colleges or exams.";
-                const lower = txt.toLowerCase();
-                
-                if (!window.userResult) {
-                    reply = "Please complete the assessment first so I can guide you better.";
-                } else {
-                    const c = window.userResult;
-                    if (lower.includes('why')) reply = `Based on your test, you showed strong aptitude for ${c.name}.`;
-                    else if (lower.includes('college')) reply = `Top colleges for you are ${c.colleges.join(', ')}.`;
-                    else if (lower.includes('exam')) reply = `You should prepare for ${c.exams.join(', ')}.`;
-                    else if (lower.includes('salary') || lower.includes('scope')) reply = "This field has excellent growth potential over the next decade.";
-                }
-                this.addMsg(reply, 'bot');
-            }, 800);
-        },
-        addMsg(txt, type) {
-            const body = document.getElementById('chatBody');
-            body.innerHTML += `<div class="chat-msg ${type}-msg">${app.escapeHtml(txt)}</div>`;
-            body.scrollTop = body.scrollHeight;
+                document.getElementById('chatInput').focus();
+            }, 100);
         }
-    };
+    }
 
-    // Initialize the app when DOM is loaded
-    document.addEventListener('DOMContentLoaded', () => {
-        app.init();
-    });
+    function sendChat() {
+        const input = document.getElementById('chatInput');
+        const message = input.value.trim();
+        
+        if (!message) return;
+        
+        // Add user message
+        addMessage(message, 'user');
+        input.value = '';
+        
+        // Generate bot response
+        setTimeout(() => {
+            let response = "I can help you understand different career paths. What would you like to know?";
+            
+            if (message.toLowerCase().includes('engineering')) {
+                response = "Engineering requires strong Mathematics and Physics. Popular branches: Computer Science, Mechanical, Civil, Electrical. Exams: JEE Main & Advanced.";
+            } else if (message.toLowerCase().includes('medical')) {
+                response = "Medical field requires Biology, Physics, Chemistry. Main exam: NEET. Careers: Doctor, Dentist, Pharmacist, Physiotherapist.";
+            } else if (message.toLowerCase().includes('commerce')) {
+                response = "Commerce focuses on business, accounting, economics. Stream: Commerce with Maths or without. Careers: CA, MBA, Finance, Business.";
+            } else if (message.toLowerCase().includes('stream')) {
+                response = "After 10th, main streams are: Science (MPC/BiPC), Commerce, Humanities, and Vocational courses. Choose based on interests and strengths.";
+            } else if (topCareer) {
+                const career = careerData[topCareer];
+                if (message.toLowerCase().includes('why')) {
+                    response = `Based on your answers, ${career.desc}`;
+                } else if (message.toLowerCase().includes('college')) {
+                    response = `For ${career.name}, consider colleges like ${career.colleges.slice(0, 3).join(', ')}.`;
+                } else if (message.toLowerCase().includes('exam')) {
+                    response = `Important exams: ${career.exams.join(', ')}. Start preparation early.`;
+                }
+            }
+            
+            addMessage(response, 'bot');
+        }, 500);
+    }
+
+    function addMessage(text, sender) {
+        const chatBody = document.getElementById('chatBody');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}-message`;
+        messageDiv.textContent = text;
+        chatBody.appendChild(messageDiv);
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    // ==================== START APP ====================
+    document.addEventListener('DOMContentLoaded', init);
 </script>
 
 </body>
