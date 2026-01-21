@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI-driven career assessment for students">
+    <meta name="author" content="CareerPath Pro">
     <title>CareerPath Pro - Advanced AI Career Guidance</title>
     
     <!-- External Libraries -->
@@ -89,7 +91,7 @@
             transition: var(--transition); display: flex; align-items: center; gap: 12px;
         }
         .option-btn:hover { border-color: var(--primary); background: #eff6ff; }
-        .option-btn.selected { border-color: var(--primary); background: #eff6ff; ring: 2px solid var(--primary); }
+        .option-btn.selected { border-color: var(--primary); background: #eff6ff; outline: 2px solid var(--primary); }
         .option-circle { 
             width: 24px; height: 24px; border-radius: 50%; border: 2px solid #cbd5e1; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
@@ -194,7 +196,7 @@
             <div class="stat-card"><strong>3 Sections</strong><br><span style="font-size:0.8rem">Academics, Interests, Behavior</span></div>
             <div class="stat-card"><strong>~5 Minutes</strong><br><span style="font-size:0.8rem">Estimated Time</span></div>
         </div>
-        <button class="btn btn-primary" onclick="app.startAssessment()">Start Assessment <i class="fas fa-arrow-right"></i></button>
+        <button id="startBtn" class="btn btn-primary">Start Assessment <i class="fas fa-arrow-right"></i></button>
     </div>
 
     <!-- ASSESSMENT UI -->
@@ -212,8 +214,8 @@
             <div id="questionContainer"></div>
 
             <div style="display: flex; justify-content: space-between; margin-top: 30px;">
-                <button class="btn btn-outline" id="prevBtn" onclick="app.prevQuestion()" disabled>Previous</button>
-                <button class="btn btn-primary" id="nextBtn" onclick="app.nextQuestion()">Next <i class="fas fa-chevron-right"></i></button>
+                <button class="btn btn-outline" id="prevBtn" disabled>Previous</button>
+                <button class="btn btn-primary" id="nextBtn">Next <i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
     </div>
@@ -265,8 +267,8 @@
         </div>
 
         <div style="text-align: center; margin-top: 30px;">
-            <button class="btn btn-outline" onclick="location.reload()"><i class="fas fa-redo"></i> Retake Assessment</button>
-            <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-download"></i> Save Report</button>
+            <button id="retakeBtn" class="btn btn-outline"><i class="fas fa-redo"></i> Retake Assessment</button>
+            <button id="saveReportBtn" class="btn btn-primary"><i class="fas fa-download"></i> Save Report</button>
         </div>
     </div>
 
@@ -274,20 +276,20 @@
 
 <!-- CHATBOT -->
 <div class="chat-widget">
-    <div class="chat-toggle" onclick="chatbot.toggle()">
+    <div class="chat-toggle" id="chatToggle">
         <i class="fas fa-comment-dots"></i>
     </div>
     <div class="chat-window" id="chatWindow">
         <div class="chat-header">
             Career Assistant
-            <span style="float: right; cursor: pointer;" onclick="chatbot.toggle()">×</span>
+            <span style="float: right; cursor: pointer;" id="chatClose">×</span>
         </div>
         <div class="chat-body" id="chatBody">
             <div class="chat-msg bot-msg">Hi! I'm your AI counselor. Once you finish the test, I can explain your results or answer questions about colleges!</div>
         </div>
         <div class="chat-input-area">
-            <input type="text" class="chat-input" id="chatInput" placeholder="Ask a question..." onkeypress="if(event.key==='Enter') chatbot.send()">
-            <button class="btn btn-primary" style="padding: 8px 15px;" onclick="chatbot.send()"><i class="fas fa-paper-plane"></i></button>
+            <input type="text" class="chat-input" id="chatInput" placeholder="Ask a question...">
+            <button class="btn btn-primary" style="padding: 8px 15px;" id="chatSendBtn"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 </div>
@@ -436,6 +438,28 @@
         currentQIndex: 0,
         scores: { engineering: 0, medical: 0, commerce: 0, humanities: 0, creative: 0, vocational: 0 },
         answers: {},
+        timerInterval: null,
+
+        init() {
+            this.setupEventListeners();
+        },
+
+        setupEventListeners() {
+            // Main buttons
+            document.getElementById('startBtn').addEventListener('click', () => this.startAssessment());
+            document.getElementById('prevBtn').addEventListener('click', () => this.prevQuestion());
+            document.getElementById('nextBtn').addEventListener('click', () => this.nextQuestion());
+            document.getElementById('retakeBtn').addEventListener('click', () => location.reload());
+            document.getElementById('saveReportBtn').addEventListener('click', () => window.print());
+            
+            // Chatbot
+            document.getElementById('chatToggle').addEventListener('click', () => chatbot.toggle());
+            document.getElementById('chatClose').addEventListener('click', () => chatbot.toggle());
+            document.getElementById('chatSendBtn').addEventListener('click', () => chatbot.send());
+            document.getElementById('chatInput').addEventListener('keypress', (e) => {
+                if(e.key === 'Enter') chatbot.send();
+            });
+        },
 
         startAssessment() {
             document.getElementById('welcomeScreen').classList.add('hidden');
@@ -446,15 +470,20 @@
         },
 
         startTimer(duration) {
-            let timer = duration, minutes, seconds;
+            let timer = duration;
             const display = document.getElementById('timeRemaining');
-            setInterval(() => {
-                minutes = parseInt(timer / 60, 10);
-                seconds = parseInt(timer % 60, 10);
-                minutes = minutes < 10 ? "0" + minutes : minutes;
-                seconds = seconds < 10 ? "0" + seconds : seconds;
-                display.textContent = minutes + ":" + seconds;
-                if (--timer < 0) this.finishAssessment();
+            
+            if(this.timerInterval) clearInterval(this.timerInterval);
+            
+            this.timerInterval = setInterval(() => {
+                const minutes = Math.floor(timer / 60);
+                const seconds = timer % 60;
+                display.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (--timer < 0) {
+                    clearInterval(this.timerInterval);
+                    this.finishAssessment();
+                }
             }, 1000);
         },
 
@@ -469,12 +498,12 @@
             document.getElementById('sectionTitle').innerText = `SECTION: ${q.section.toUpperCase()}`;
 
             let html = `<div class="question-card">
-                        <div class="question-text">${q.text}</div>`;
+                        <div class="question-text">${this.escapeHtml(q.text)}</div>`;
 
             if (q.type === 'range') {
                 html += `<div class="range-container">
                             <div class="range-value" id="val-${q.id}">50</div>
-                            <input type="range" min="${q.min}" max="${q.max}" value="50" oninput="app.updateRange(this, '${q.id}')">
+                            <input type="range" min="${q.min}" max="${q.max}" value="50" id="range-${q.id}">
                             <div class="range-labels"><span>Low</span><span>High</span></div>
                          </div>`;
                 // Auto-save default value
@@ -482,9 +511,9 @@
             } else {
                 html += `<div class="options-grid">`;
                 q.options.forEach((opt, idx) => {
-                    html += `<div class="option-btn" onclick="app.selectOption(this, ${idx})">
+                    html += `<div class="option-btn" data-index="${idx}">
                                 <div class="option-circle"></div>
-                                ${opt.text}
+                                ${this.escapeHtml(opt.text)}
                              </div>`;
                 });
                 html += `</div>`;
@@ -492,14 +521,34 @@
             html += `</div>`;
             container.innerHTML = html;
 
+            // Add event listeners for dynamic elements
+            if (q.type === 'range') {
+                const rangeInput = document.getElementById(`range-${q.id}`);
+                const rangeValue = document.getElementById(`val-${q.id}`);
+                
+                rangeInput.addEventListener('input', (e) => {
+                    const value = e.target.value;
+                    rangeValue.textContent = value;
+                    this.answers[q.id] = { val: parseInt(value), weights: q.weights };
+                });
+            } else {
+                const optionButtons = document.querySelectorAll('.option-btn');
+                optionButtons.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const allOpts = document.querySelectorAll('.option-btn');
+                        allOpts.forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        
+                        // Save Data
+                        const idx = parseInt(btn.dataset.index);
+                        this.answers[q.id] = { val: 1, weights: q.options[idx].weights };
+                    });
+                });
+            }
+
             // Manage buttons
             document.getElementById('prevBtn').disabled = this.currentQIndex === 0;
             document.getElementById('nextBtn').innerText = this.currentQIndex === questions.length - 1 ? "Finish" : "Next";
-        },
-
-        updateRange(el, id) {
-            document.getElementById(`val-${id}`).innerText = el.value;
-            this.answers[id] = { val: parseInt(el.value), weights: questions[this.currentQIndex].weights };
         },
 
         selectOption(el, idx) {
@@ -514,7 +563,8 @@
         },
 
         nextQuestion() {
-            if (!this.answers[questions[this.currentQIndex].id]) {
+            const currentQ = questions[this.currentQIndex];
+            if (!this.answers[currentQ.id]) {
                 alert("Please select an option.");
                 return;
             }
@@ -534,6 +584,7 @@
         },
 
         finishAssessment() {
+            clearInterval(this.timerInterval);
             document.getElementById('assessmentScreen').classList.add('hidden');
             document.getElementById('timerDisplay').classList.add('hidden');
             document.getElementById('loadingScreen').classList.remove('hidden');
@@ -554,11 +605,16 @@
         },
 
         calculateScores() {
+            // Reset scores
+            this.scores = { engineering: 0, medical: 0, commerce: 0, humanities: 0, creative: 0, vocational: 0 };
+            
             // Weighted Logic
             Object.values(this.answers).forEach(ans => {
-                const multiplier = ans.type === 'range' ? (ans.val / 100) : 1;
+                const multiplier = typeof ans.val === 'number' ? (ans.val / 100) : 1;
                 for (const [category, weight] of Object.entries(ans.weights)) {
-                    this.scores[category] += weight * multiplier;
+                    if (this.scores[category] !== undefined) {
+                        this.scores[category] += weight * multiplier;
+                    }
                 }
             });
         },
@@ -581,8 +637,8 @@
             document.getElementById('careerIcon').innerHTML = `<i class="${topCareer.icon}"></i>`;
             
             // Render Tags
-            let tagsHtml = `<div class="career-badge">Primary Stream: ${topCareer.streams[0]}</div>`;
-            topCareer.colleges.slice(0, 2).forEach(c => tagsHtml += `<div class="career-badge">${c}</div>`);
+            let tagsHtml = `<div class="career-badge">Primary Stream: ${this.escapeHtml(topCareer.streams[0])}</div>`;
+            topCareer.colleges.slice(0, 2).forEach(c => tagsHtml += `<div class="career-badge">${this.escapeHtml(c)}</div>`);
             document.getElementById('careerTags').innerHTML = tagsHtml;
 
             // Render Chart
@@ -592,19 +648,19 @@
             const roadmapHtml = `
                 <div class="roadmap-step">
                     <div class="step-title">Class 11 & 12</div>
-                    <div class="step-desc">Select ${topCareer.streams.join(' or ')}. Focus on core subjects.</div>
+                    <div class="step-desc">Select ${this.escapeHtml(topCareer.streams.join(' or '))}. Focus on core subjects.</div>
                 </div>
                 <div class="roadmap-step">
                     <div class="step-title">Entrance Exams</div>
-                    <div class="step-desc">Prepare for ${topCareer.exams.join(', ')}.</div>
+                    <div class="step-desc">Prepare for ${this.escapeHtml(topCareer.exams.join(', '))}.</div>
                 </div>
                 <div class="roadmap-step">
                     <div class="step-title">Undergraduate Degree</div>
-                    <div class="step-desc">Enroll in top colleges like ${topCareer.colleges[0]}.</div>
+                    <div class="step-desc">Enroll in top colleges like ${this.escapeHtml(topCareer.colleges[0])}.</div>
                 </div>
                 <div class="roadmap-step">
                     <div class="step-title">Career Launch</div>
-                    <div class="step-desc">Internships and entry-level jobs in ${topCareer.name}.</div>
+                    <div class="step-desc">Internships and entry-level jobs in ${this.escapeHtml(topCareer.name)}.</div>
                 </div>
             `;
             document.getElementById('roadmapContainer').innerHTML = roadmapHtml;
@@ -613,8 +669,8 @@
             const altHtml = sorted.slice(1, 3).map(k => {
                 const c = careerClusters[k[0]];
                 return `<div class="stat-card">
-                            <strong>${c.name}</strong>
-                            <p style="font-size:0.8rem; color:var(--text-light)">${c.streams[0]}</p>
+                            <strong>${this.escapeHtml(c.name)}</strong>
+                            <p style="font-size:0.8rem; color:var(--text-light)">${this.escapeHtml(c.streams[0])}</p>
                         </div>`;
             }).join('');
             document.getElementById('altPaths').innerHTML = altHtml;
@@ -637,9 +693,24 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: { r: { beginAtZero: true, grid: { color: '#e2e8f0' } } }
+                    scales: { 
+                        r: { 
+                            beginAtZero: true, 
+                            grid: { color: '#e2e8f0' },
+                            ticks: { display: false }
+                        } 
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
                 }
             });
+        },
+
+        escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
     };
 
@@ -677,10 +748,15 @@
         },
         addMsg(txt, type) {
             const body = document.getElementById('chatBody');
-            body.innerHTML += `<div class="chat-msg ${type}-msg">${txt}</div>`;
+            body.innerHTML += `<div class="chat-msg ${type}-msg">${app.escapeHtml(txt)}</div>`;
             body.scrollTop = body.scrollHeight;
         }
     };
+
+    // Initialize the app when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        app.init();
+    });
 </script>
 
 </body>
